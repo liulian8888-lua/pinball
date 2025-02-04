@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Pinball Game</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #000;
+        }
+        canvas {
+            border: 1px solid #fff;
+            display: block;
+            margin: auto;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="pinballCanvas" width="400" height="600"></canvas>
+    <script>
+        const canvas = document.getElementById('pinballCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const ballRadius = 10;
+        const speedIncreaseFactor = 1.1; // Factor by which the speed increases
+
+        const paddleWidth = 100;
+        const paddleHeight = 10;
+        let paddleX = (canvas.width - paddleWidth) / 2;
+
+        const backgroundImage = new Image();
+        backgroundImage.src = 'background.png'; // Make sure this path is correct
+
+        const balls = [
+            { x: canvas.width / 2, y: canvas.height - 30, dx: 2, dy: -2 }
+        ];
+
+        document.addEventListener('mousemove', (event) => {
+            const mouseX = event.clientX - canvas.offsetLeft;
+            if (mouseX > 0 && mouseX < canvas.width) {
+                paddleX = mouseX - paddleWidth / 2;
+            }
+        });
+
+        function drawBall(ball) {
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ballRadius, 0, Math.PI * 2);
+            ctx.fillStyle = "#0095DD";
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        function drawPaddle() {
+            ctx.beginPath();
+            ctx.rect(paddleX, canvas.height - paddleHeight, paddleWidth, paddleHeight);
+            ctx.fillStyle = "#0095DD";
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+            drawPaddle();
+
+            balls.forEach(ball => {
+                drawBall(ball);
+
+                // Ball movement
+                ball.x += ball.dx;
+                ball.y += ball.dy;
+
+                // Ball collision with walls
+                if (ball.x + ball.dx > canvas.width - ballRadius || ball.x + ball.dx < ballRadius) {
+                    ball.dx = -ball.dx;
+                }
+                if (ball.y + ball.dy < ballRadius) {
+                    ball.dy = -ball.dy;
+                } else if (ball.y + ball.dy > canvas.height - ballRadius) {
+                    // Check collision with paddle
+                    if (ball.x > paddleX && ball.x < paddleX + paddleWidth) {
+                        ball.dy = -ball.dy;
+                        // Optional: Add some angle effect based on where it hits the paddle
+                        let angle = (ball.x - (paddleX + paddleWidth / 2)) / (paddleWidth / 2);
+                        ball.dx = 2 * angle; // Adjust the direction based on hit position
+                        // Increase the speed
+                        ball.dx *= speedIncreaseFactor;
+                        ball.dy *= speedIncreaseFactor;
+                        // Add a new ball
+                        balls.push({ x: canvas.width / 2, y: canvas.height - 30, dx: 2, dy: -2 });
+                    } else {
+                        alert("Game Over!");
+                        // Reset balls
+                        balls.length = 1;
+                        balls[0] = { x: canvas.width / 2, y: canvas.height - 30, dx: 2, dy: -2 };
+                    }
+                }
+            });
+        }
+
+        backgroundImage.onload = function() {
+            setInterval(draw, 10);
+        };
+    </script>
+</body>
+</html>
