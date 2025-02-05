@@ -18,10 +18,18 @@
     </style>
 </head>
 <body>
-    <canvas id="pinballCanvas" width="400" height="600"></canvas>
+    <canvas id="pinballCanvas"></canvas>
     <script>
         const canvas = document.getElementById('pinballCanvas');
         const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
 
         const ballRadius = 10;
         const speedIncreaseFactor = 1.1; // Factor by which the speed increases
@@ -41,6 +49,13 @@
             const mouseX = event.clientX - canvas.offsetLeft;
             if (mouseX > 0 && mouseX < canvas.width) {
                 paddleX = mouseX - paddleWidth / 2;
+            }
+        });
+
+        document.addEventListener('touchmove', (event) => {
+            const touchX = event.touches[0].clientX - canvas.offsetLeft;
+            if (touchX > 0 && touchX < canvas.width) {
+                paddleX = touchX - paddleWidth / 2;
             }
         });
 
